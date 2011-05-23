@@ -70,12 +70,6 @@ import org.w3c.dom.Element;
 
 public class SimpleBPMNProcessTest extends JbpmJUnitTestCase {
 
-	public SimpleBPMNProcessTest() {
-		super(true);
-		System.setProperty("drools.schema.validating", "false");
-		System.out.println("remove this!" + this);
-	}
-
 	public void testMinimalProcess() throws Exception {
 		KnowledgeBase kbase = createKnowledgeBase("BPMN2-MinimalProcess.bpmn2");
 		StatefulKnowledgeSession ksession = createKnowledgeSession(kbase);

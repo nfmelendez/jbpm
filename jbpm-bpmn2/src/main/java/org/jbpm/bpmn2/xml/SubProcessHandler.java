@@ -22,10 +22,10 @@ import java.util.Map;
 import org.drools.process.core.datatype.DataType;
 import org.drools.process.core.datatype.impl.type.ObjectDataType;
 import org.drools.xml.ExtensibleXmlParser;
+import org.jbpm.bpmn2.core.IntermediateLink;
 import org.jbpm.bpmn2.core.ItemDefinition;
 import org.jbpm.bpmn2.core.SequenceFlow;
 import org.jbpm.compiler.xml.ProcessBuildData;
-import org.jbpm.process.core.Context;
 import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.workflow.core.Node;
 import org.jbpm.workflow.core.NodeContainer;
@@ -65,21 +65,15 @@ public class SubProcessHandler extends AbstractNodeHandler {
 				ForEachNode forEachNode = new ForEachNode();
 				forEachNode.setId(node.getId());
 				forEachNode.setName(node.getName());
-				CompositeContextNode subProcess = (CompositeContextNode) node;
-				for (org.drools.definition.process.Node subNode: subProcess.getNodes()) {
+				for (org.drools.definition.process.Node subNode: ((CompositeContextNode) node).getNodes()) {
 					forEachNode.addNode(subNode);
 				}
-				forEachNode.setMetaData("UniqueId", subProcess.getMetaData("UniqueId"));
-				forEachNode.setMetaData(ProcessHandler.CONNECTIONS, subProcess.getMetaData(ProcessHandler.CONNECTIONS));
-				VariableScope v = (VariableScope) subProcess.getDefaultContext(VariableScope.VARIABLE_SCOPE);
+				forEachNode.setMetaData("UniqueId", ((CompositeContextNode) node).getMetaData("UniqueId"));
+				forEachNode.setMetaData(ProcessHandler.CONNECTIONS, ((CompositeContextNode) node).getMetaData(ProcessHandler.CONNECTIONS));
+				VariableScope v = (VariableScope) ((CompositeContextNode) node).getDefaultContext(VariableScope.VARIABLE_SCOPE);
 				((VariableScope) ((CompositeContextNode) forEachNode.internalGetNode(2)).getDefaultContext(VariableScope.VARIABLE_SCOPE)).setVariables(v.getVariables());
 				node = forEachNode;
 				handleForEachNode(node, element, uri, localName, parser);
-				
-				List<SequenceFlow> connections = (List<SequenceFlow>) node
-				.getMetaData().get(ProcessHandler.CONNECTIONS);
-				ProcessHandler.linkConnections(subProcess, connections);
-				
 				found = true;
 				break;
 			}
@@ -101,6 +95,11 @@ public class SubProcessHandler extends AbstractNodeHandler {
     	List<SequenceFlow> connections = (List<SequenceFlow>)
 			compositeNode.getMetaData(ProcessHandler.CONNECTIONS);
     	ProcessHandler.linkConnections(compositeNode, connections);
+    	
+    	List<IntermediateLink> throwLinks = (List<IntermediateLink>) compositeNode
+		.getMetaData(ProcessHandler.LINKS);
+    	ProcessHandler.linkIntermediateLinks(compositeNode, throwLinks);	
+    	
     	ProcessHandler.linkBoundaryEvents(compositeNode);
     }
     
